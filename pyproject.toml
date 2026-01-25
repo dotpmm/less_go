@@ -1,0 +1,7 @@
+[project]
+name = "less-go"
+version = "0.1.0"
+description = "For help!"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
