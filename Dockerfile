@@ -9,4 +9,7 @@ RUN uv pip install --no-cache -r requirements.txt
 
 COPY . .
 
-CMD ["uv", "run", "main.py"]
+EXPOSE 10000
+
+CMD ["python", "main.py"]
+
