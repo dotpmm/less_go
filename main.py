@@ -192,8 +192,6 @@ async def history(interaction: discord.Interaction, limit: int = 10, offset: int
     except Exception as e:
         await interaction.followup.send(embed=create_error_embed("Error", str(e)[:200]))
 
-
-# Flask health check server for Render
 app = Flask(__name__)
 
 @app.route("/")
@@ -209,11 +207,9 @@ def run_discord_bot():
     client.run(DISCORD_TOKEN)
 
 if __name__ == "__main__":
-    # Start Discord bot in background thread
     discord_thread = threading.Thread(target=run_discord_bot, daemon=True)
     discord_thread.start()
     
-    # Run gunicorn in main thread (required for signal handlers)
     from gunicorn.app.base import BaseApplication
     
     class GunicornApp(BaseApplication):
