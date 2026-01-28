@@ -204,13 +204,22 @@ def health():
 def health_check():
     return {"status": "healthy"}
 
-def run_gunicorn():
+def run_discord_bot():
+    print("Starting Discord bot...")
+    client.run(DISCORD_TOKEN)
+
+if __name__ == "__main__":
+    # Start Discord bot in background thread
+    discord_thread = threading.Thread(target=run_discord_bot, daemon=True)
+    discord_thread.start()
+    
+    # Run gunicorn in main thread (required for signal handlers)
     from gunicorn.app.base import BaseApplication
     
     class GunicornApp(BaseApplication):
-        def __init__(self, app, options=None):
+        def __init__(self, application, options=None):
             self.options = options or {}
-            self.application = app
+            self.application = application
             super().__init__()
         
         def load_config(self):
@@ -226,21 +235,9 @@ def run_gunicorn():
         "workers": 1,
         "threads": 2,
         "accesslog": "-",
-        "errorlog": "-",
-        "loglevel": "info",
+        "loglevel": "warning",
     }
     print(f"Starting gunicorn on port {port}...")
     GunicornApp(app, options).run()
 
-def run_discord_bot():
-    print("Starting Discord bot...")
-    client.run(DISCORD_TOKEN)
-
-if __name__ == "__main__":
-    # Start gunicorn in background thread
-    gunicorn_thread = threading.Thread(target=run_gunicorn, daemon=True)
-    gunicorn_thread.start()
-    time.sleep(1)  # Quick wait for port bind
-    # Run Discord bot on main thread
-    run_discord_bot()
 
