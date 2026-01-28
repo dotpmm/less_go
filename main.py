@@ -206,11 +206,16 @@ def health_check():
 
 def run_flask():
     port = int(os.getenv("PORT", 10000))
-    app.run(host="0.0.0.0", port=port, threaded=True)
+    print(f"Starting health check server on port {port}...")
+    app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=False)
+
+def run_discord_bot():
+    print("Starting bot...")
+    client.run(DISCORD_TOKEN)
 
 if __name__ == "__main__":
-    # Start Flask in a separate thread
     flask_thread = threading.Thread(target=run_flask, daemon=True)
     flask_thread.start()
-    # Run the Discord bot on the main thread
-    client.run(DISCORD_TOKEN)
+    time.sleep(2)
+    print("Flask server started, now starting Discord bot...")
+    run_discord_bot()
