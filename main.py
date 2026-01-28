@@ -2,10 +2,12 @@ import os
 import time
 import hmac
 import hashlib
+import threading
 import discord
 from discord import app_commands
 from discord.ext import commands
 import aiohttp
+from flask import Flask
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -191,5 +193,24 @@ async def history(interaction: discord.Interaction, limit: int = 10, offset: int
         await interaction.followup.send(embed=create_error_embed("Error", str(e)[:200]))
 
 
+# Flask health check server for Render
+app = Flask(__name__)
+
+@app.route("/")
+def health():
+    return {"status": "ok", "bot": "AskBookie Discord Bot"}
+
+@app.route("/health")
+def health_check():
+    return {"status": "healthy"}
+
+def run_flask():
+    port = int(os.getenv("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, threaded=True)
+
 if __name__ == "__main__":
+    # Start Flask in a separate thread
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    # Run the Discord bot on the main thread
     client.run(DISCORD_TOKEN)
