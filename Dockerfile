@@ -5,7 +5,7 @@ WORKDIR /app
 ENV UV_SYSTEM_PYTHON=1
 
 COPY requirements.txt .
-RUN uv add --no-cache -r requirements.txt
+RUN uv pip install --no-cache -r requirements.txt
 
 COPY . .
 
