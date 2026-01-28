@@ -204,18 +204,43 @@ def health():
 def health_check():
     return {"status": "healthy"}
 
-def run_flask():
+def run_gunicorn():
+    from gunicorn.app.base import BaseApplication
+    
+    class GunicornApp(BaseApplication):
+        def __init__(self, app, options=None):
+            self.options = options or {}
+            self.application = app
+            super().__init__()
+        
+        def load_config(self):
+            for key, value in self.options.items():
+                self.cfg.set(key.lower(), value)
+        
+        def load(self):
+            return self.application
+    
     port = int(os.getenv("PORT", 10000))
-    print(f"Starting health check server on port {port}...")
-    app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=False)
+    options = {
+        "bind": f"0.0.0.0:{port}",
+        "workers": 1,
+        "threads": 2,
+        "accesslog": "-",
+        "errorlog": "-",
+        "loglevel": "info",
+    }
+    print(f"Starting gunicorn on port {port}...")
+    GunicornApp(app, options).run()
 
 def run_discord_bot():
-    print("Starting bot...")
+    print("Starting Discord bot...")
     client.run(DISCORD_TOKEN)
 
 if __name__ == "__main__":
-    flask_thread = threading.Thread(target=run_flask, daemon=True)
-    flask_thread.start()
-    time.sleep(2)
-    print("Flask server started, now starting Discord bot...")
+    # Start gunicorn in background thread
+    gunicorn_thread = threading.Thread(target=run_gunicorn, daemon=True)
+    gunicorn_thread.start()
+    time.sleep(1)  # Quick wait for port bind
+    # Run Discord bot on main thread
     run_discord_bot()
+
